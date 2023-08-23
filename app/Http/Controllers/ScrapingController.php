@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ScrapedBook;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
@@ -22,33 +23,29 @@ class ScrapingController extends Controller
         $crawler = new Crawler($content);
 
         $books = [];
+        $base = 'https://www.kotobati.com/';
 
-        $crawler->filter('.book-box')->each(function (Crawler $node) use ($client, $books) {
-            $title = $node->filter('div > h3')->text();
-            $author = $node->filter('div > p')->text();
+        $crawler->filter('.book-box')->each(function (Crawler $node) use ($client, $base, &$books) {
+            $book = [];
+            $book['title'] = $node->filter('div > h3')->text();
+            $book['author'] = $node->filter('div > p')->text();
             $href = $node->filter('div > a')->attr('href');
-            $linkDetails = 'https://www.kotobati.com/' . $href;
+
+            $linkDetails = $base . $href;
 //             get pages
             $response = $client->request('GET', $linkDetails);
             $content = $response->getContent();
             $crawler = new Crawler($content);
-            $pagesCount = $crawler->filter('.book-table-info >li')->eq(0)->filter('p')->eq(1)->text();
-            $lang = $crawler->filter('.book-table-info >li')->eq(1)->filter('p')->eq(1)->text();
-            $size = $crawler->filter('.book-table-info >li')->eq(2)->filter('p')->eq(1)->text();
-//            $lang = $crawler->filter('.book-table-info >li')->eq(3)->filter('p')->eq(1)->text();
-//            $lang = $crawler->filter('.book-table-info >li')->eq(4)->filter('p')->eq(1)->text();
-                    dd( $size );
 
-            $pdfLink = $node->filter('a.book-link')->attr('href');
-            $books[] = [
-                'title' => $title,
-                'author' => $author,
-                'pages_count' => $pagesCount,
-                'lang' => $lang,
-                'size' => $size,
-                'pdf_link' => $pdfLink,
-            ];
+            $book['pages_count'] = $crawler->filter('.book-table-info >li')->eq(0)->filter('p')->eq(1)->text();
+            $book['pages_count'] = is_numeric( $book['pages_count']) ? (int)$book['pages_count'] : null;
+            $book['lang'] = $crawler->filter('.book-table-info >li')->eq(1)->filter('p')->eq(1)->text();
+            $book['size'] = $crawler->filter('.book-table-info >li')->eq(2)->filter('p')->eq(1)->text();
+            $book['pdf_link'] = $base . $crawler->filter('.detail-box >div >div')->eq(1)->filter('a')->eq(0)->attr('href');
+            $books[] = $book;
+            ScrapedBook::query()->updateOrCreate(['title' => $book['title']], $book);
         });
+        dd($books);
 
         DB::table('scraped_books')->insert($books);
 
