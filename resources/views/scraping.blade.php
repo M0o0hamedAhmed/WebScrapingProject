@@ -45,7 +45,7 @@
             <td>{{ $scrapedBook->pages_count }}</td>
             <td>{{ $scrapedBook->language }}</td>
             <td>{{ $scrapedBook->size }}</td>
-            <td><a class="btn btn-primary" href="{{$scrapedBook->pdfLink}}" role="button">Download</a></td>
+            <td><a class="btn btn-primary" href="{{$scrapedBook->pdf_link}}" role="button" target="_blank">Download</a></td>
         </tr>
     @endforeach
     </tbody>
@@ -87,7 +87,7 @@
             <td>${item.pages_count}</td>
             <td>${item.language}</td>
             <td>${item.size}</td>
-            <td><a class="btn btn-primary" href="${item.pdfLink}" role="button">Download</a></td>
+            <td><a class="btn btn-primary" href="${item.pdf_link}" role="button" target="_blank">Download</a></td>
         </tr>`;
 
                         bookHtml.push(bookElement);
