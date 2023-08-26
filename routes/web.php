@@ -18,5 +18,5 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/', [ScrapingController::class,'scrape']);
-Route::get('/scrape', [ScrapingController::class,'scrape']);
+Route::get('/', [ScrapingController::class,'index']);
+Route::get('/scrape', [ScrapingController::class,'scrape'])->name('getMoreData');

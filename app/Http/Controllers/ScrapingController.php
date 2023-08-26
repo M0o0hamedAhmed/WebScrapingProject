@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ScrapedBook;
-use Illuminate\Support\Facades\DB;
+use http\Env\Request;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
 
@@ -11,13 +11,16 @@ class ScrapingController extends Controller
 {
     public function index()
     {
-        return view('scraping');
+        $this->scrape();
+        $scrapedBooks = ScrapedBook::query()->get();
+        return view('scraping',compact('scrapedBooks'));
     }
 
     public function scrape()
     {
+        $page = Request()->get('pageNumber',1);
         $client = HttpClient::create();
-        $response = $client->request('GET', 'https://www.kotobati.com/section/%D8%B1%D9%88%D8%A7%D9%8A%D8%A7%D8%AA');
+        $response = $client->request('GET', 'https://www.kotobati.com/section/%D8%B1%D9%88%D8%A7%D9%8A%D8%A7%D8%AA?page={$page}');
 
         $content = $response->getContent();
         $crawler = new Crawler($content);
@@ -37,18 +40,40 @@ class ScrapingController extends Controller
             $content = $response->getContent();
             $crawler = new Crawler($content);
 
-            $book['pages_count'] = $crawler->filter('.book-table-info >li')->eq(0)->filter('p')->eq(1)->text();
-            $book['pages_count'] = is_numeric( $book['pages_count']) ? (int)$book['pages_count'] : null;
-            $book['lang'] = $crawler->filter('.book-table-info >li')->eq(1)->filter('p')->eq(1)->text();
-            $book['size'] = $crawler->filter('.book-table-info >li')->eq(2)->filter('p')->eq(1)->text();
-            $book['pdf_link'] = $base . $crawler->filter('.detail-box >div >div')->eq(1)->filter('a')->eq(0)->attr('href');
+            try {
+
+                $book['pages_count'] = $crawler->filter('.book-table-info >li')->eq(0)->filter('p')->eq(1)->text('null');
+            } catch (\Exception $e) {
+                $book['pages_count'] = null;
+            }
+            try {
+                $book['pages_count'] = is_numeric($book['pages_count']) ? (int)$book['pages_count'] : null;
+
+            } catch (\Exception $e) {
+                $book['pages_count'] = null;
+            }
+            try {
+                $book['lang'] = $crawler->filter('.book-table-info >li')->eq(1)->filter('p')->eq(1)->text('null');
+
+            } catch (\Exception $e) {
+                $book['lang'] = null;
+            }
+            try {
+                $book['size'] = $crawler->filter('.book-table-info >li')->eq(2)->filter('p')->eq(1)->text('null');
+            } catch (\Exception  $e) {
+                $book['size'] = null;
+            }
+            try {
+                $book['pdf_link'] = $base . $crawler->filter('.detail-box >div >div')->eq(1)->filter('a')->eq(0)->attr('href');
+            } catch (\Exception $e) {
+                $book['pdf_link'] = null;
+            }
             $books[] = $book;
             ScrapedBook::query()->updateOrCreate(['title' => $book['title']], $book);
         });
-        dd($books);
+//        dd($books);
 
-        DB::table('scraped_books')->insert($books);
 
-        return response()->json(['message' => $crawler]);
+        return response()->json(['message' => $books]);
     }
 }
