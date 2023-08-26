@@ -12,6 +12,7 @@
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
+        "laravel/ui": "^3.4",
         "simplehtmldom/simplehtmldom": "^2.0@RC",
         "symfony/dom-crawler": "^5.4"
     },

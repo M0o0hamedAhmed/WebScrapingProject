@@ -18,9 +18,10 @@ class ScrapingController extends Controller
 
     public function scrape()
     {
+        set_time_limit(300);
         $page = Request()->get('pageNumber',1);
         $client = HttpClient::create();
-        $response = $client->request('GET', 'https://www.kotobati.com/section/%D8%B1%D9%88%D8%A7%D9%8A%D8%A7%D8%AA?page={$page}');
+        $response = $client->request('GET', 'https://www.kotobati.com/section/%D8%B1%D9%88%D8%A7%D9%8A%D8%A7%D8%AA?'.http_build_query(['page'=>$page]));
 
         $content = $response->getContent();
         $crawler = new Crawler($content);
@@ -72,8 +73,9 @@ class ScrapingController extends Controller
             ScrapedBook::query()->updateOrCreate(['title' => $book['title']], $book);
         });
 //        dd($books);
+        $scrapedBooks = ScrapedBook::query()->get();
 
 
-        return response()->json(['message' => $books]);
+        return response()->json(['message' => $scrapedBooks]);
     }
 }

@@ -3,25 +3,63 @@
 <head>
     <title>Web Scraping</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Scripts -->
+    <script src="{{ asset('js/app.js') }}" defer></script>
+
+    <!-- Styles -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+            crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"
+            integrity="sha384-Rx+T1VzGupg4BHQYs2gCW9It+akI2MM/mndMCy36UVfodzcJcF0GGLxZIzObiEfa"
+            crossorigin="anonymous"></script>
 </head>
 <body>
-<h1>Web Scraping Example</h1>
-<button id="scrapeButton">Scrape Data</button>
-<div id="message"></div>
-<h1>Scraped Books</h1>
-<ul id="book-list">
+<div class="badge bg-primary text-wrap p-3 d-flex h1 display-1  m-2  justify-content-center">Web Scraping Example</div>
+<table class="table table-dark">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Title</th>
+        <th scope="col">author</th>
+        <th scope="col">pages Count</th>
+        <th scope="col">Language</th>
+        <th scope="col">Size</th>
+        <th scope="col">Pdf Link</th>
+    </tr>
+    </thead>
+    <tbody id="book-list">
     @foreach($scrapedBooks as $scrapedBook)
-        <li>{{$scrapedBook->title}}</li>
-    @endforeach
-</ul>
 
-<button id="load_books">Load Books</button>
-<input id="pageNumber" name="pageNumber" type="number" value="1">
+        <tr>
+            <th scope="row">{{$scrapedBook->id}}</th>
+            <td>{{$scrapedBook->title}}</td>
+            <td>{{$scrapedBook->author}}</td>
+            <td>{{ $scrapedBook->pages_count }}</td>
+            <td>{{ $scrapedBook->language }}</td>
+            <td>{{ $scrapedBook->size }}</td>
+            <td><a class="btn btn-primary" href="{{$scrapedBook->pdfLink}}" role="button">Download</a></td>
+        </tr>
+    @endforeach
+    </tbody>
+</table>
+<div class="badge bg-white text-wrap p-3 d-flex h1 display-1  m-2  justify-content-center">
+    <button id="load_books" type="button" class="btn btn-primary">Load Books</button>
+</div>
+
+<input id="pageNumber" name="pageNumber" type="hidden" value="1">
 
 <script>
     $(document).ready(function () {
 
-        $(document).on('click','#load_books',(function () {
+        $(document).on('click', '#load_books', (function () {
             // $.get('/scrape', function (response) {
             //     $('#message').text(response.message);
             //     // You can also refresh the page or update the content dynamically
@@ -30,13 +68,34 @@
             console.log($('#pageNumber').val())
             $('#pageNumber').val((index, value) => +value + 1)
             console.log($('#pageNumber').val())
+            let bookHtml = [];
+            $('#load_books').prop('disabled', true);
+
             $.ajax({
                 url: "{{route('getMoreData')}}",
                 dataType: "json",
                 type: "get",
-                data: {'pageNumber' : $('#pageNumber').val()},
+                data: {'pageNumber': $('#pageNumber').val()},
                 success: function (data) {
-                    console.log(data)
+                    console.log('start')
+                    console.log(data.message)
+                    data.message.forEach(function (item) {
+                        var bookElement = `   <tr>
+            <th scope="row">${item.id}</th>
+            <td>${item.title}</td>
+            <td>${item.author}</td>
+            <td>${item.pages_count}</td>
+            <td>${item.language}</td>
+            <td>${item.size}</td>
+            <td><a class="btn btn-primary" href="${item.pdfLink}" role="button">Download</a></td>
+        </tr>`;
+
+                        bookHtml.push(bookElement);
+                        $('#load_books').prop('disabled', false);
+
+                    });
+                    $('#book-list').html(bookHtml.join(''))
+                    console.log('end')
                 },
                 error: function (e) {
                 }
