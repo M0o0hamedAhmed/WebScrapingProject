@@ -51,7 +51,7 @@
     </tbody>
 </table>
 <div class="badge bg-white text-wrap p-3 d-flex h1 display-1  m-2  justify-content-center">
-    <button id="load_books" type="button" class="btn btn-primary">Load Books</button>
+    <button id="load_books" type="button" class="btn btn-primary">Scraping Books</button>
 </div>
 
 <input id="pageNumber" name="pageNumber" type="hidden" value="1">

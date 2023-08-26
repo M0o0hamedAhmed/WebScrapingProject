@@ -11,7 +11,7 @@ class ScrapingController extends Controller
 {
     public function index()
     {
-        $this->scrape();
+//        $this->scrape();
         $scrapedBooks = ScrapedBook::query()->get();
         return view('scraping',compact('scrapedBooks'));
     }
