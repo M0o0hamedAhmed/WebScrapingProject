@@ -43,14 +43,14 @@
             <td>{{$scrapedBook->title}}</td>
             <td>{{$scrapedBook->author}}</td>
             <td>{{ $scrapedBook->pages_count }}</td>
-            <td>{{ $scrapedBook->language }}</td>
-            <td>{{ $scrapedBook->size }}</td>
-            <td><a class="btn btn-primary" href="{{$scrapedBook->pdf_link}}" role="button" target="_blank">Download</a></td>
+            <td>{{ $scrapedBook->lang }}</td>
+            <td>{!! $scrapedBook->size ?? '<span class="text-danger">غير متاح </span>' !!}</td>
+            <td> {!! is_null($scrapedBook->pdf_link) ? '<span class="text-danger">غير متاح </span>' :' <a class="btn btn-primary" href="{{$scrapedBook->pdf_link}}" role="button" target="_blank" >Download</a>'!!} </td>
         </tr>
     @endforeach
     </tbody>
 </table>
-<div class="badge bg-white text-wrap p-3 d-flex h1 display-1  m-2  justify-content-center">
+<div class=" badge bg-white text-wrap p-3 d-flex h1 display-1  m-2  justify-content-center">
     <button id="load_books" type="button" class="btn btn-primary">Scraping Books</button>
 </div>
 
